@@ -1,0 +1,25 @@
+1)идём и качаем с kernek.org ядро
+в нём есть куча .config файлов под арм в папке /linux/arch/arm/comnfig
+
+2)для тестов мы выбрали multi_v7_defconfig так как она поддерживается в qemu
+собираем под эту платформу с помошью:
+ -начнём с конфига
+  sudo make ARCH=arm multi_v7_defconfig
+ -собираем ядро для этого я поставил всё что было под крос компиляцию в репозитории скриншот прилогается  :)
+  sudo make -j 8 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- zImage
+ -после сбоки утилитой file проверяем что у нас за файл собрался,ядро это или нет
+ в папке ../linux/arch/arm/boot
+  file zImage 
+  zImage: Linux kernel ARM boot executable zImage (little-endian)
+
+3) для запуска в qemu нам понадобится ещё DTB(запуск на разных устройствах с одним и темже камнем но разными компанентами) файл
+  собираем сразу все DTS в DTB через команду:
+  sudo make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- dtbs
+
+4)запускаем эмуляцию в qemu. закидываем в одну папку ядро и dtb.
+  qemu-system-arm -M vexpress-a9 -kernel zImage -dtb vexpress-v2p-ca9.dtb -nographic -append "console=ttyAMA0"
+  
+  скришнот kernal panic в папочке.
+
+  
+  
