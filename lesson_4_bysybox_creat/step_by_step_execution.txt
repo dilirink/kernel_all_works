@@ -1,0 +1,37 @@
+1)клонируем с https://git.busybox.net/busybox/?h=1_31_stable
+
+2)создаём make defconfig
+
+3)далее make menuconfig в нём идём в settings -> cross compiler prefix печатаем arm-linux-gnueabihf- 
+ также включаем статическую сборку чтобы не было проблем с библиотеками пункт 
+3.1)запускаю через make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- пункт 3 не сработал:(
+
+
+гайд как посмотреть зависимости для нашего собранного файла
+arm-linux-gnueabihf-readelf -d ./busybox
+
+чистка старого образа busybox
+make distclean
+
+4)дале устанавливаем sudo make install  или sudo make install ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
+заходим в установленную сборку busybox/_install. собираем в архив initramfs
+find . | cpio -o -H newc | gzip>initramfs.cpio.gz
+
+5) копируем полученный initramfs в папку с нашим ядром и запускаем qemu сл командой которая прописана в файле start.sh
+qemu-system-arm -M vexpress-a9 -kernel zImage -initrd initramfs.cpio.gz -dtb vexpress-v2p-ca9.dtb -nographic -append "console=ttyAMA0 rdinit=/bin/ash"
+
+! ! !РАДУЕМСЯ, МНОГО ОЧЕНЬ МНОГО. все шаги до этого были пропитаны болью.
+
+далее монтируем оcновные директории, это можно сделать автоматически  с помошью MDEV!
+mkdir /proc
+mount -t proc proc /proc
+mkdir /sys
+mount -t sysfs sys /sys
+
+с помошью MDEV создаёт все файлы устройств.
+mkdir /proc /sys 
+mount -t proc proc /proc 
+mount -t sysfs sys /sys
+echo /sbin/mdev > /proc/sys/kernel/hotplug
+
+картиночка работы(работаем.png) прилагается!
